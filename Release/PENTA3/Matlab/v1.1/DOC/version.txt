@@ -1,4 +1,0 @@
-This version was begun from what was formerly "PENTA2" on 5/19/2010.  This branch will be called PENTA3.
-
-v1.0  -- Begun
-v1.1  -- Added option for calculating the inductive flows and fluxes for a unity excitation.  6/8/10
