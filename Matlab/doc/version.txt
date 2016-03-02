@@ -1,0 +1,38 @@
+This version was begun from what was formerly "PENTA2" on 5/19/2010.  This branch will be called PENTA3.
+
+v1.0  -- Begun
+v1.1  -- Added option for calculating the inductive flows and fluxes for a unity excitation.  6/8/10
+v1.2  -- Fixed bug in calculating the PS fluxes, Added more robust read of ion_params file. 1/6/2011
+v1.3  -- Major update 9/22/2011
+	*
+	* Update to match new documentation.  Improved convolution accuracy and consolidated 
+	*  definitions. 
+	*
+	* Significantly slower (due to more iterations of convoultion integrand) but 
+	* much more accurate. -- MBT/T and SN methods now agree well.
+	*
+     *run_penta.m -- updated exit message, added new flux_cap flag
+     *read_pprof_file -- repaced calls to fnder, csaps with mkpp 
+      and unmkpp for greater compatibility across matlab licenses 
+      (fewer package dependencies)
+     *PENTA_main -- Added Bsq as argument to load_DKES_star_files, removed calculation of Xvec,
+	  main Er loop now calculates just Flows and Gamma, removed QoT.  Consolidated MBT and 
+	  T calls.  
+     *load_input_files -- fixed buggy parsing on ion input file
+     *load_DKES_star_files -- added B**2 factor to D33 spitzer
+     *energy_conv3 -- Changed Kmax to 20, num_K_vals to 10000, 
+      default is now logarithmic spacing in K, changed calls to 
+      calc_perp_coll_freq for speed.  Removed coefname input.
+     *calc_perp_coll_freq -- rewrote to only calculate field component for speed
+     *calc_flows_taguchi_v2 -- D33 based coefficients now use logarithmic 
+      interpolation, modified equations to match new documentation, changed 
+      inversion to left matrix division for accuracy. Simplified arrays/matricies.
+     *calc_flows_SN_v2 -- see taguchi flows
+	 *calc_flows_DKES -- simplified arrays.  Fixed BUG where D31 coefficient was
+	   used instead of D33 for finite applied E_||.  Removed Ts input, added D33*.
+	 *calc_flux_DKES -- simplified calls
+	 *removed form_Xvec, replaced with form_Avec
+	 *Updated flux routines to individual Gamma and QoT routines, consolidated
+	   to just MBT and SN routines.
+	 *Added simplified convolution routine for calculating PS fluxes.
+	 *Added flags for setting integration parameters in run_penta.m and the conv. routines.

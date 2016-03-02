@@ -1,0 +1,32 @@
+This version was begun from what was formerly "PENTA2" on 5/19/2010.  This branch will be called PENTA3.
+
+* denotes important update
+
+v1.0  -- Initial Fortran release (1/4/2011)
+v1.1  -- (1/18/2011)
+	 Added convective portion of PS heat flux (usually a small correction).
+         Added flows_vs_Er output file.
+	 Added check for monotonically increasing cmul, efield in D* files
+	 Added check for esmall parameter in fit_coeffs
+	 Updated readme files.
+*v1.2 -- (2/1/2011)
+         Fixed bug where flows(num_Er_test) was used instead of 
+         Flows_ambi(:,iroot) when evaluating ambipolar fluxes. Updated 
+         documentation. Added parallel current density and contravariant
+         flows output file.
+*v1.3  -- (09/28/2011)
+	 -Added extra factor of pi to poloidal and toroidal contravarient flows.
+	 -Added QoT_vs_Er output file (activated by flag)
+	 -Consolidated num_c_D## to single variables
+	 -Added check to ensure all D## coefficients have the same efield, cmul.
+	 -Consolidated MBT and T definitions.
+	 -Added flux_cap input
+	 -Consolidated x,y spline knot arrays
+	 -Updated all flux,flow routines to match new documentation.
+	 -removed 1/B0**2 term from radial coefficient for SN method.
+	 -Routines now use logarithmic interpolation of D33 and D11.
+	 -added <B**2> term to D33_Spitzer.
+	 -Fixed bugs in calculating PS flux in MBT method.
+	 -Convolution now perfomed in log steps, default nsteps increased 10x.
+	 -Replaced exponentiation with multiplication where possible.
+	 -Fixed bug where code stops on even number of ambipolar roots.

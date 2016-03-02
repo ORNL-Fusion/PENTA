@@ -1,0 +1,17 @@
+&run_params
+input_is_Er    = .true.
+log_interp     = .true.
+use_quanc8     = .false.
+read_U2_file   = .true.
+Add_Spitzer_to_D33 = .true.                             
+num_Er_test = 100
+numKsteps   = 1000
+kord_pprof  = 3
+keord       = 2
+kcord       = 2
+Kmin   = 1.d-5
+Kmax   = 10.d
+epsabs = 1.d-8
+epsrel = 1.d-6
+Method  = 'SN'
+/

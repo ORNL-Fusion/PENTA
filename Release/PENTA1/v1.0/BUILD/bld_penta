@@ -1,0 +1,10 @@
+OPT=""
+rm quanc8.o vmodules_app_sugama.o lijs_subrotn_ver3.o penta_8_8_2007.o bspline90_22.o bspline.mod xpnt
+pgf90 -c $OPT ../SRC/bspline90_22.f90
+pgf90 -c $OPT ../SRC/vmodules_app_sugama.f
+pgf90 -c $OPT ../SRC/quanc8.f
+pgf90 -c $OPT ../SRC/lijs_subrotn_ver3.f
+pgf90 -c $OPT ../SRC/penta_8_8_2007.f
+pgf90 $OPT -o xpnt bspline90_22.o quanc8.o vmodules_app_sugama.o lijs_subrotn_ver3.o \
+ penta_8_8_2007.o
+

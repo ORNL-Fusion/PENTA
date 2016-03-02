@@ -1,0 +1,49 @@
+v1.2 -- 2008 -- Extensive modifications by JL
+This version is a "cleaned up" version of v1.1 where dead code was removed
+and kind precision was added to all constants and routines.
+Also many comments and small corrections were added.
+
+Notes:
+  Inputs
+	- Removed former input 7 (ich/ech)
+	- Inputs 2 and 3 defining the Er search range can now be either e<a>phi/kT or
+	  Er in <V/cm>.  The choice is set by a logical variable at compile time
+  Outputs
+	- Added kind specification module
+	- Added physical constant module
+	- All variables, constants declared to double (rknd) precision
+  Penta.f
+	- Added comments, rearranged code
+	- Added logical variable to ignore profile scaling (pedestal option)
+	- Minor legend, screen output changes
+	- Added catch for infinite loop error
+  lijs_subroutine
+	- Syntax, I/O structure changed -- now only does single integration by default (removed unused looping options)
+	- Added logical variable to use logarthmic interpolation of coefficient database files
+	- Reduced spline fit order to 2 (linear)
+	- Changed energy integral from x (normalized velocity) to K (normalized energy)
+		  - Note this change made clear the error in the old integrand
+	- Small changes in definitions of numerical factors
+	  - factor of sqrt(2)/pi removed from collision integral
+	- Included density in lijs subroutine insread of multiplying it in PENTA program
+
+
+
+v1.1  -- 2007-2008 -- Modifications by JL
+vmodules_app_sugama.f
+  - Added kind specification
+lijs_subrotn_ver3.f
+  - changed spline order for fitting DKES coeffs to 2 (linear)
+	    - See kxord, kyord
+            - The cubic spline interpolation was not behaving due to the Er resonance.
+  - Changed the coefficient for (lcoef_opt .ge. 4) from 2. to 1. 
+	    - See next change
+  - Added factor of 2.*xval to fun123 for lcoef_opt == 4 or 5
+	    - This factor of 2x was missing from the convolution integral
+	    - Note that with the above change the factor of 2 was actually there.  This just adds a bit more transparency.
+  - Added subroutine to perform double precision error function (derf) 
+	    - Intrinsic to ifort but not most Fortran compilers
+penta_8_8_2007.f
+  - Added additional output and debugging options (minor)
+
+v1.0  -- Orignal version from Don Spong

@@ -1,0 +1,19 @@
+
+v1.1  -- 2007-2008 -- Modifications by JL
+vmodules_app_sugama.f
+  - Added kind specification
+lijs_subrotn_ver3.f
+  - changed spline order for fitting DKES coeffs to 2 (linear)
+	    - See kxord, kyord
+            - The cubic spline interpolation was not behaving due to the Er resonance.
+  - Changed the coefficient for (lcoef_opt .ge. 4) from 2. to 1. 
+	    - See next change
+  - Added factor of 2.*xval to fun123 for lcoef_opt == 4 or 5
+	    - This factor of 2x was missing from the convolution integral
+	    - Note that with the above change the factor of 2 was actually there.  This just adds a bit more transparency.
+  - Added subroutine to perform double precision error function (derf) 
+	    - Intrinsic to ifort but not most Fortran compilers
+penta_8_8_2007.f
+  - Added additional output and debugging options (minor)
+
+v1.0  -- Orignal version from Don Spong

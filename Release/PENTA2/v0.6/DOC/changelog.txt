@@ -1,0 +1,72 @@
+v2.2 (9/9/2009)
+-added functions to make/load D* files and calculate L*,M*,N* files internally
+-added option for running in "DKES limit"
+-BUG: Fixed N* and L* coefficients for Z~=1
+-
+
+v2.1 (8/26/2009)
+-now works for Smax > 4
+-fixed bug in Lmat indexing for Smax>3
+-fixed bug that produced error in multi-root cases
+
+v2.0 (8/26/2009)
+-rewrote for "arbitrary" truncation in Sonine expansion, this version supports up to 5 terms
+-brought more options out to run_PENTA
+-rewrote many routines for more transparent looping
+-fixed bug in PS flux indexing
+-added new parallel flow calculation routine
+-added more outputs
+
+v0.9 (7/24/2009)
+-fixed minor bug in finding Er roots when roots are too close
+-brought more variables out to run_penta.m
+-added check for Er=0, which causes DIV0
+-added plot for heat fluxes
+-removed use of run_penta_condor, run_penta now serves the same purpose
+-also modifed JS' condor script to reflect this
+
+v0.8
+-added function for calculated PS fluxes
+-added PS fluxes to ambipolar fluxes (bug fix)
+-replaced csaps fitting of U2 with interp1
+
+v0.7
+-added PS fluxes, <U**2> file now required
+-added input to run_PENTA_condor for pprof_char
+-added roa_vals as an output
+
+INDIVIUDUAL FILE CHANGES
+-PENTA.m
+**added PS flux calculation, U2 as input
+-run_PENTA.m
+**added roa_vals as an output
+-run_PENTA_condor.m
+**added roa_vals as an output
+**added pprof_char as an input
+
+-load_LMN_star_files., read_pprof_file.m
+**changed path style
+-find_Er_roots_PENTA
+**see above
+
+v0.6
+-added run_PENTA_condor for UW condor runs.  Output is returned from this function.
+-Ion parameters (num_ion_species, Z_ion, miopi (ion mass to proton mass ratio) are now read from ion_params namelist file
+-modified path calls to use UNIX format, this is still compatible with windows ('\' to '/')
+-added check for zero ambipolar roots.  The "ambipolar" Er is then set identically to -1000V/m.  This is a temporary fix.
+-If the number of ambipolar roots is not 0,1,3, the first root is chosen, error statement changed to display statement.  This is a temporary fix.
+
+INDIVIUDUAL FILE CHANGES
+-run_PENTA.m
+**removed ion parameter lines and inputs to surf_loop_PENTA, changed path to UNIX style (compatible with windows)
+-surf_loop_PENTA.m
+**added lines for reading ion_params file, changed path style
+-load_LMN_star_files., read_pprof_file.m
+**changed path style
+-find_Er_roots_PENTA
+**see above
+
+
+
+v0.5
+Original upload to y drive
