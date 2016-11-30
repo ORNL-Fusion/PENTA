@@ -1,1 +1,1 @@
-link ../SRC/makefile
+../src/makefile

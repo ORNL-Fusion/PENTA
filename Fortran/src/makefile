@@ -21,12 +21,14 @@ SHELL = /bin/sh
 FCOMP = gfortran
 FLDR = gfortran
 FFLAGS = -O3
-FFLAGS_DBG = -g -Wall -frange-check -fbounds-check 
+FFLAGS_DBG = -g -Wall -frange-check -fbounds-check
+FFLAGS_DBG = -g -frange-check -fbounds-check -Wcharacter-truncation -fcheck=all -fbacktrace \
+ -Wall -Wsurprising
 LDRFLAGS =
 
-SOURCEPATH = ../SRC/
-EXECUTABLE = PENTA3
-DEBUG_EX = PENTA3_dbg
+SOURCEPATH = ../src/
+EXECUTABLE = PENTA3.exe
+DEBUG_EX = PENTA3_dbg.exe
 
 # External library paths and libraries
 
@@ -45,7 +47,7 @@ OBJS90 = penta.o read_input_file_mod.o penta_functions_mod.o penta_subroutines.o
 # This macro lists the modules to be compiled which have identically named .f90 files
 
 MODS90 = penta_kind_mod.mod io_unit_spec.mod read_input_file_mod.mod phys_const.mod penta_functions_mod.mod\
- penta_math_routines_mod.mod vmec_var_pass.mod pprof_pass.mod coeff_var_pass.mod bspline.mod
+ penta_math_routines_mod.mod vmec_var_pass.mod pprof_pass.mod coeff_var_pass.mod bspline.mod penta_subroutines.mod
 
 #-----------------------------------------------------------------------
 
@@ -101,20 +103,15 @@ penta_functions_mod.mod : penta_kind_mod.mod phys_const.mod\
 read_input_file_mod.mod : penta_kind_mod.mod vmec_var_pass.mod\
  pprof_pass.mod bspline.mod coeff_var_pass.mod io_unit_spec.mod\
  bspline.mod
+penta_subroutines.mod : penta_kind_mod.mod
 $(SOURCEPATH)penta_subroutines.f90: penta_kind_mod.mod phys_const.mod\
  penta_functions_mod.mod pprof_pass.mod vmec_var_pass.mod bspline.mod
 $(SOURCEPATH)penta.f90: penta_kind_mod.mod io_unit_spec.mod\
  read_input_file_mod.mod vmec_var_pass.mod phys_const.mod\
  penta_functions_mod.mod pprof_pass.mod coeff_var_pass.mod\
- penta_math_routines_mod.mod
+ penta_math_routines_mod.mod penta_subroutines.mod
 
 #-----------------------------------------------------------------------
-
-# Specifying 'clean' dependencies is also handy.  With no
-# listed dependencies, clean is considered a 'phony' target.
-# The dash in front of a command means to continue even if that
-# command returns a nonzero error code.
-
 clean:
 	-rm *.o *.mod
 	@echo "Cleaned object and mod files from "$(PWD)"."

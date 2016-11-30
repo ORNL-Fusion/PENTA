@@ -9,9 +9,10 @@ numKsteps   = 1000
 kord_pprof  = 3
 keord       = 2
 kcord       = 2
-Kmin   = 1.d-5
-Kmax   = 10.d
-epsabs = 1.d-8
-epsrel = 1.d-6
+Kmin   = 1.e-5
+Kmax   = 10.
+epsabs = 1.e-8
+epsrel = 1.e-6
 Method  = 'SN'
+use_beam = .false.
 /
