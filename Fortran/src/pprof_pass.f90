@@ -22,7 +22,7 @@ Module pprof_pass
   
   Implicit none
   
-  Real(rknd) :: ne, Te, dnedr, dTedr
+  Real(rknd) :: ne, Te, dnedr, dTedr, beam_force
   Real(rknd), allocatable :: ni(:), Ti(:), dnidr(:), dTidr(:)
   Real(rknd), allocatable :: ni_prof(:,:), Ti_prof(:,:)
 End module pprof_pass

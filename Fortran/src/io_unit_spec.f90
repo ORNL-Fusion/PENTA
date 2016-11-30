@@ -27,6 +27,7 @@ Module io_unit_spec
     iu_pprof=23,          &   ! Plasma profile file (input)
     iu_coeff=24,          &   ! DKES coefficient file (input)
     iu_Ufile=25,          &   ! <U**2> file (input)
+    iu_beam=26,           &   ! Beam force (input)
     iu_flux_out=10,       &   ! Fluxes vs r/a (output)
     iu_pprof_out=11,      &   ! Plasma profile check (output
     iu_fvEr_out=12,       &   ! Fluxes vs Er (output)

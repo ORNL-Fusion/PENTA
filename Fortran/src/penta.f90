@@ -70,6 +70,10 @@
 !       where the densities are in units of 10**12/cc and the 
 !       temperatures in eV and i1, i2... are the ion species.
 !
+!   beam_force.dat - Same format as plasma_profiles. Units of Newtons
+!       (Torque/major radius). Columns : r/a, F.  This is force on the
+!       plasma mass, and is divided by species density inside the code.
+!
 !   Utilde2_profile - Contains the quantity <U**2>, where U is the
 !     PS flow function as defined by Sugama and Nishimura.  The
 !     first row is the number of points, then r/a points and the
@@ -234,7 +238,8 @@ Use read_input_file_mod, Only :      &
   read_vmec_file,                    & ! Reads VMEC data file
   read_pprof_file,                   & ! Reads plasma profile data file
   read_dkes_star_files,              & ! Reads DKES data files
-  read_Utilde2_file                    ! Reads Utilde2 file (<U**2> data)
+  read_Utilde2_file,                 & ! Reads Utilde2 file (<U**2> data)
+  read_beam_file
 Use vmec_var_pass , Only :           & ! VMEC variables
   ! Imported scalar variables
     arad, roa_surf, Bsq, B0,         &
@@ -242,6 +247,7 @@ Use vmec_var_pass , Only :           & ! VMEC variables
 Use pprof_pass, Only :               & ! Plasma profile variables
   ! Imported scalar variables
     ne, Te, dnedr, dTedr,            &
+    beam_force,                      & 
   ! Imported array variables (1D)
     ni, Ti, dnidr, dTidr
 Use coeff_var_pass, Only :           & ! DKES coeff. variables
@@ -274,6 +280,9 @@ Use penta_math_routines_mod, Only :  &
   ! Imported functions
      rlinspace                         ! Creates linearly spaced arrays
 
+Use PENTA_subroutines, Only : find_Er_roots, fit_coeffs, &
+     define_friction_coeffs, form_xvec
+
 Implicit None
 
 ! Default values for variables set in run_params namelist file:
@@ -284,8 +293,11 @@ Logical ::    &
   read_U2_file   = .true.,     & ! If false <U**2> is calculated from D11*
   flux_cap       = .true.,     & ! If true, min(L_radial) = 0
   output_QoT_vs_Er = .false.,  & ! If true Q/T vs Er output file is written
-  Add_Spitzer_to_D33 = .true.    ! If true collisional portion of D33* is added
-                                 !  else it is assumed to be included in-file  
+  Add_Spitzer_to_D33 = .true., & ! If true collisional portion of D33* is added
+                                 ! else it is assumed to be included in-file
+  use_beam       = .false.       ! If true, beam force in Newtons (Torque/Major radius) is read
+                                 ! as a function of 
+
 Integer(iknd) ::    &
   num_Er_test = 50_iknd,        & ! Number of Er points in search range
   numKsteps   = 10000_iknd,     & ! Number of K points (linear) for convolution 
@@ -328,8 +340,8 @@ Integer(iknd) :: iroot            ! Ambipolar root index
 Integer(iknd) :: num_roots        ! Number of ambipolar roots
 Real(rknd)    :: Er_min, Er_max   ! Er search range min and max
 Real(rknd)    :: B_Eprl           ! Input parallel electric field
-Real(rknd)    :: U2               ! <U**2> Related to Pfirsch-Schlüter factor
-Real(rknd)    :: G2               ! <G**2> Related to Pfirsch-Schlüter factor
+Real(rknd)    :: U2               ! <U**2> Related to Pfirsch-Schlueter factor
+!Real(rknd)    :: G2               ! <G**2> Related to Pfirsch-Schlueter factor
 Real(rknd)    :: vth_e            ! Electron thermal velocity
 Real(rknd)    :: loglambda        ! Coulomb logarithm
 Real(rknd)    :: Er_test, abs_Er  ! Current value of Er and |Er| used in loop
@@ -397,29 +409,13 @@ Real(rknd), Allocatable ::      &
   upol(:,:),                    & ! fsa contravariant poloidal flow (species,roots)
   utor(:,:)                       ! fsa contravariant toroidal flow (species,roots)
 
-
-! Interface blocks 
 Real(rknd) :: Er_roots(num_roots_max)   ! The maximum number of roots allowed
-Interface
-  Subroutine find_Er_roots(gamma_e,gamma_i,Er_test_vals,Z_ion, &
-    num_Er_test,num_ion_species,Er_roots,num_roots)
-    Use penta_kind_mod
-    Real(rknd),    Intent(in)  :: gamma_e(num_Er_test)  
-    Real(rknd),    Intent(in)  :: gamma_i(num_Er_test,num_ion_species)
-    Real(rknd),    Intent(in)  :: Er_test_vals(num_Er_test)
-    Real(rknd),    Intent(in)  :: Z_ion(num_ion_species)
-    Integer(iknd), Intent(in)  :: num_Er_test
-    Integer(iknd), Intent(in)  :: num_ion_species
-    Real(rknd),    Intent(out) :: Er_roots(:) 
-    Integer(iknd), Intent(out) :: num_roots 
-  End Subroutine find_Er_roots
-End Interface
 
 ! Namelist files
 Namelist / ion_params / num_ion_species, Z_ion_init, miomp_init
 Namelist / run_params / input_is_Er, log_interp, use_quanc8, read_U2_file, &
   Add_Spitzer_to_D33, num_Er_test, numKsteps, kord_pprof, keord, kcord,    &
-  Kmin, Kmax, epsabs, epsrel, Method, flux_cap, output_QoT_vs_Er
+  Kmin, Kmax, epsabs, epsrel, Method, flux_cap, output_QoT_vs_Er, use_beam
 
 !- End of header -------------------------------------------------------------
 
@@ -504,6 +500,11 @@ Endif
 Call read_vmec_file(js,run_ident)
 Call read_pprof_file(pprof_char,num_ion_species,roa_surf,arad,kord_pprof)
 Call read_dkes_star_files(coeff_ext,Add_Spitzer_to_D33,Bsq)
+If (use_beam) Then
+  Call read_beam_file(roa_surf,kord_pprof)
+Else
+  beam_force = 0._rknd
+Endif
 
 ! Allocate DKES coefficients arrays
 Allocate(xt_c(num_c + kcord))
@@ -761,7 +762,7 @@ EndIf
 Do ie = 1,num_Er_test
 
   Er_test = Er_test_vals(ie)
-  abs_Er = Dabs(Er_test)
+  abs_Er = Abs(Er_test)
 
   ! Form thermodynamic force vector (Xvec)
   Call form_Xvec(Er_test,Z_ion,B_Eprl,num_ion_species,Xvec)
@@ -775,7 +776,8 @@ Do ie = 1,num_Er_test
          - 2.5_rknd*dTdrs(ispec1)/Temps(ispec1)
     Avec(ind_A+1)   = -Xvec(ind_X+1) / (Temps(ispec1)*elem_charge)
     Avec(ind_A+2)   = Xvec(num_species*2+1)*charges(ispec1) &
-         * B0/(Temps(ispec1)*elem_charge*Dsqrt(Bsq))
+         * B0/(Temps(ispec1)*elem_charge*Sqrt(Bsq)) + &
+         beam_force/(Temps(ispec1)*elem_charge*dens(ispec1))
   Enddo
 
   ! Select the appropriate algorithm and calculate the flows and fluxes
@@ -898,7 +900,7 @@ Do iroot = 1_iknd, num_roots
          - 2.5_rknd*dTdrs(ispec1)/Temps(ispec1)
     Avec(ind_A+1)   = -Xvec(ind_X+1) / (Temps(ispec1)*elem_charge)
     Avec(ind_A+2)   = Xvec(num_species*2+1)*charges(ispec1) &
-         * B0/(Temps(ispec1)*elem_charge*Dsqrt(Bsq))
+         * B0/(Temps(ispec1)*elem_charge*Sqrt(Bsq))
   Enddo
 
   ! Select the appropriate algorithm and calculate the flows and fluxes
@@ -972,7 +974,7 @@ Do iroot = 1_iknd, num_roots
 
 
   ! Calculate parallel current density
-  Jprl_parts(:,iroot) = dens*charges*Dsqrt(Bsq) *         &
+  Jprl_parts(:,iroot) = dens*charges*Sqrt(Bsq) *         &
     Flows_ambi(1:(num_species-1)*(Smax+1)+1:Smax+1,iroot)
   Jprl_ambi(iroot) = Sum(Jprl_parts(:,iroot))
 

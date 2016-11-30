@@ -22,6 +22,64 @@ Implicit none
 
 Contains
 
+  Subroutine read_beam_file(roa_surf,kord_pprof)
+    Use penta_kind_mod
+    Use io_unit_spec, Only: iu_beam
+    Use pprof_pass, only :  &
+      ! Imported scalar variables:
+         beam_force
+    Use bspline, only : &
+      ! Imported routines
+         dbsnak,           &             ! Computes spline knots
+         dbsint,           &             ! Computes spline coefficients
+         dbsval,           &             ! Evaluates spline
+         dbsder                          ! Evaluates spline derivative
+    
+    Implicit None
+    Real(rknd),    Intent(in) :: roa_surf
+    Integer(iknd), Intent(in) :: kord_pprof       
+    ! Local scalars
+    Integer(iknd) :: np_prof                ! Number of radial points in file
+    Integer(iknd) :: iocheck, jind
+    ! Local arrays:
+    Character(120) :: beam_file   
+    Real(rknd), Allocatable :: roa_prof(:)        ! r/a values in file
+    Real(rknd), Allocatable :: beam_prof(:)       ! beam values in file
+    Real(rknd), Allocatable :: beam_knot_array(:)   ! spline knot array
+    Real(rknd), Allocatable :: spl_beam(:)          ! spline coefficients
+    
+    beam_file="beam_force.dat"
+    Open(UNIT=iu_beam,FILE=beam_file,STATUS='old',IOSTAT=iocheck)
+    ! Check for success
+    If ( iocheck /= 0 ) Then
+      Write(*,'(a20 a40)') 'Error opening file: ', beam_file
+      Stop 'Exiting: I/O Error in subroutine read_beam_file'
+    Endif
+    Read(iu_beam,*) np_prof
+    Allocate(roa_prof(np_prof),beam_prof(np_prof))
+    ! Loop over surfaces
+    Do jind=1,np_prof
+      ! Read each line
+      Read(iu_beam,*) roa_prof(jind),beam_prof(jind)
+    Enddo
+    Close(unit=iu_beam)
+  
+    ! Spline fit profile and evaluate at r/a of surfaces
+
+    Allocate(beam_knot_array(np_prof+kord_pprof),spl_beam(np_prof))
+    
+    ! Fit profile
+    Call dbsnak(np_prof,roa_prof,kord_pprof,beam_knot_array)
+    Call dbsint(np_prof,roa_prof,beam_prof,kord_pprof,beam_knot_array,spl_beam)
+    
+    ! Evaluate spline fit at r/a of the test surface
+    beam_force = dbsval(roa_surf,kord_pprof,beam_knot_array,np_prof,spl_beam)
+
+    !deallocate variables
+    Deallocate(roa_prof,beam_prof,beam_knot_array,spl_beam)
+    
+  End Subroutine read_beam_file
+  
   !---------------------------------------------------------------------------
   !+ Reads the VMEC data from the profile_data_*** file
   !---------------------------------------------------------------------------
@@ -76,7 +134,7 @@ Contains
   iota_vmec(:),                 & ! iota/2/pi values 
   B0_vmec(:)                      ! <B> values
   Integer(iknd), Allocatable :: js_vmec(:)    ! Surface index values
-  Character(60)              :: vmec_fname    ! Filename string
+  Character(120)              :: vmec_fname    ! Filename string
   Character(60)              :: ch_dum        ! Used to read legend
   Character(60)              :: tb = char(9)  ! Used to read spaces                              
 
@@ -359,7 +417,7 @@ Contains
   Real(rknd), allocatable :: cmul_D11(:),   & ! efield arrays for coeffs
     cmul_D13(:),          &
     cmul_D33(:)
-  Character(60) :: fname      ! File name
+  Character(120) :: fname      ! File name
   Character(3)  :: fchar      ! String denoting file type
 
   !- End of header -----------------------------------------------------------

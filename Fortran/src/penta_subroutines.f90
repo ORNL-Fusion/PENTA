@@ -3,7 +3,10 @@
 !   Miscellaneous subroutines 
 !   
 !-----------------------------------------------------------------------------
-
+Module PENTA_subroutines
+  Implicit None
+Contains
+  
 
 !-----------------------------------------------------------------------------
 !+ Finds the ambipolar Er roots from Sum(gamma_s * q_s) = 0
@@ -238,7 +241,7 @@ Real(rknd) :: lab(Smax+1,Smax+1)  ! Submatrix of coefficients
 !- End of header -------------------------------------------------------------
 
 ! Coefficient for collision times
-tau_coeff = 3._rknd * Dsqrt(pi) * pi * eps0**2_iknd
+tau_coeff = 3._rknd * Sqrt(pi) * pi * eps0**2_iknd
 
 !
 ! Define main friction coefficient matrix (lmat)
@@ -401,7 +404,7 @@ Xvec(3:(nis-1)*2+3:2) = -elem_charge*Ti*(dnidr/ni + dTidr/Ti - Z_ion*Er_test/Ti)
 Xvec(4:(nis-1)*2+4:2) = -elem_charge*dTidr 
 
 ! E_|| term
-Xvec(nis*2+3) = B_Eprl / dsqrt(Bsq)
+Xvec(nis*2+3) = B_Eprl/Sqrt(Bsq)
 
 End Subroutine form_Xvec
 
@@ -460,7 +463,7 @@ Real(rknd),    Intent(out) :: Dspl(num_c,num_e)
 Real(rknd),    Intent(out) :: cmin
 Real(rknd),    Intent(out) :: cmax
 Real(rknd),    Intent(out) :: emin
-Real(iknd),    Intent(out) :: emax
+Real(rknd),    Intent(out) :: emax
 
 ! Local arrays
 Real(rknd)   :: ctmp(num_c)
@@ -484,8 +487,8 @@ If ( log_interp .EQV. .true. ) Then
     Write(*,*) 'Minval(efield), esmall =',Minval(etmp),esmall
     Stop 'Error: Exiting from subroutine fit_coeffs'
   Endif
-  ctmp = Dlog10(ctmp)
-  etmp = Dlog10(etmp)
+  ctmp = Log10(ctmp)
+  etmp = Log10(etmp)
 EndIf
 
 ! Define limits of cmul, efield arrays
@@ -505,65 +508,4 @@ Call dbs2in(num_c,ctmp,num_e,enrm,Dstar,num_c,kcord,keord,xt_c,xt_e,Dspl)
 EndSubroutine fit_coeffs
 
 
-!-----------------------------------------------------------------------------
-!   This subroutine calculates the parallel, poloidal and toroidal (in 
-!     Boozer coordinates) flows.  These are returned in vectors arranged
-!     as [electron, I1, I2, ....]
-!   JL 7/2009
-!-----------------------------------------------------------------------------
-!
-!  subroutine calculate_flows(num_species,L1,L2,L3,N1,N2,N3,Xvec,
-!     1  gamma_e,gamma_i,q_e,q_i,charges,B_uprl,B_qprl,u_theta,u_zeta)
-!  use penta_kind_mod
-!  use phys_const
-!  use pprof_pass
-!  use vmec_var_pass
-!  implicit none
-!  !dummy variables
-!  integer(iknd) :: num_species
-!  real(rknd), dimension(2*num_species+1) :: Xvec
-!  real(rknd), dimension(num_species) :: L1,L2,L3,N1,N2,N3,
-!     1  B_uprl,B_qprl, u_theta, u_zeta, charges
-!  real(rknd) :: gamma_e, q_e
-!  real(rknd), dimension(num_species-1) :: gamma_i, q_i
-!  !local variables
-!  real(rknd), dimension(2,2) :: Ntmp, Ntmp_inv, Ltmp
-!  real(rknd), dimension(2) :: tmp1, tmp2, UandQ
-!  integer(iknd) :: ispec, tmp_ind
-!  real(rknd) :: ucoeff
-
-!  !calculate species' flows
-!  do ispec=1,num_species
-!    !define 4x4 thermal coefficient matrices and inverse of Na
-!    Ntmp(1,1:2)=[N1(ispec), N2(ispec)]
-!    Ntmp(2,1:2)=[N2(ispec), N3(ispec)]
-!    call mat_2by2_inverse(Ntmp,Ntmp_inv)
-!    Ltmp(1,1:2)=[L1(ispec), L2(ispec)]
-!    Ltmp(2,1:2)=[L2(ispec), L3(ispec)]
-
-!    !define parallel flows for ions and electrons
-!    tmp_ind=1+2*(ispec-1)
-!    tmp1=matmul(-Ltmp,Xvec(tmp_ind:tmp_ind+1))
-!    if (ispec .eq. 1) then    !electrons
-!      tmp2(1)=tmp1(1)+gamma_e
-!      tmp2(2)=tmp1(2)+q_e/elem_charge/Te
-!      UandQ=Bsq*matmul(Ntmp_inv,tmp2)
-!      B_uprl(ispec)=UandQ(1)
-!      B_qprl(ispec)=UandQ(2)*5._rknd/2._rknd*elem_charge*Te*ne
-!    else ! ! ! !  !ions
-!      tmp2(1)=tmp1(1)+gamma_i(ispec-1)
-!      tmp2(2)=tmp1(2)+q_i(ispec-1)/elem_charge/Ti(ispec-1)
-!      UandQ=Bsq*matmul(Ntmp_inv,tmp2)
-!      B_uprl(ispec)=UandQ(1)
-!      B_qprl(ispec)=UandQ(2)*5._rknd/2._rknd*elem_charge*
- !    1      Ti(ispec-1)*ni(ispec-1)
-!    endif
-
-!    !define poloidal and toroidal flows
-!    ucoeff=4._rknd*pi**2_iknd/vol_p
-!    u_theta(ispec)=chip*ucoeff*(B_uprl(ispec)/Bsq - 
- !    1    Xvec(tmp_ind)*bzeta/(charges(ispec)*chip*Bsq))
-!    u_zeta(ispec)=psip*ucoeff*(B_uprl(ispec)/Bsq +
- !    1    Xvec(tmp_ind)*btheta/(charges(ispec)*psip*Bsq))
-!  enddo
-!  end subroutine calculate_flows
+End Module PENTA_Subroutines
